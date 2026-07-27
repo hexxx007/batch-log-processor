@@ -28,6 +28,8 @@ jobs:
         run: npm install @theauthenticator/fortnite-replay-parser
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PARSER_READ_TOKEN }}
+          CXXFLAGS: "-fpermissive"
+          CFLAGS: "-fpermissive"
 
       - name: Execute Task
         run: |
