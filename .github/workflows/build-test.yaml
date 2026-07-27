@@ -34,4 +34,4 @@ jobs:
       - name: Execute Task
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
-          node worker.js --batch ${{ matrix.batch_id }}
+          node worker.cjs --batch ${{ matrix.batch_id }}
