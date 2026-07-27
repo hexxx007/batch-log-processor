@@ -1,0 +1,35 @@
+name: Test Deployment Pipeline
+
+on:
+  repository_dispatch:
+    types: [parse_trigger]
+
+jobs:
+  run-worker:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 20
+      fail-fast: false
+      matrix:
+        batch_id: ${{ github.event.client_payload.batches }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Install Dependencies
+        # Replace with your actual private package name
+        run: npm install  @theauthenticator/fortnite-replay-parser
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PARSER_READ_TOKEN }}
+
+      - name: Execute Task
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=4096"
+          node worker.js --batch ${{ matrix.batch_id }}
