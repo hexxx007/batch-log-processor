@@ -20,12 +20,12 @@ jobs:
       - name: Setup Node Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           registry-url: 'https://npm.pkg.github.com'
+          scope: 'theauthenticator'
 
       - name: Install Dependencies
-        # Replace with your actual private package name
-        run: npm install  @theauthenticator/fortnite-replay-parser
+        run: npm install @theauthenticator/fortnite-replay-parser
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PARSER_READ_TOKEN }}
 
