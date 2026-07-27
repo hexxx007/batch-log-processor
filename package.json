@@ -1,0 +1,8 @@
+{
+  "name": "batch-log-processor",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@theauthenticator/fortnite-replay-parser": "^1.6.1"
+  }
+}
