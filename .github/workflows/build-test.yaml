@@ -1,37 +1,52 @@
-name: Test Deployment Pipeline
+name: Parse Fortnite Replay
 
 on:
-  repository_dispatch:
-    types: [parse_trigger]
+  workflow_dispatch:
+    inputs:
+      session_id:
+        description: 'Match/Session ID to parse'
+        required: true
+        type: string
+      event_id:
+        description: 'Event ID'
+        required: false
+        default: 'test_event'
+        type: string
+      window_id:
+        description: 'Window ID'
+        required: false
+        default: 'test_window'
+        type: string
+      vps_callback_url:
+        description: 'VPS Webhook URL to report status'
+        required: true
+        type: string
 
 jobs:
-  run-worker:
+  parse:
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 20
-      fail-fast: false
-      matrix:
-        batch_id: ${{ github.event.client_payload.batches }}
-
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node Environment
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: 'theauthenticator'
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install Dependencies
-        run: npm install @theauthenticator/fortnite-replay-parser
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.PARSER_READ_TOKEN }}
-          CXXFLAGS: "-fpermissive"
-          CFLAGS: "-fpermissive"
+        run: npm ci
 
-      - name: Execute Task
-        run: |
-          export NODE_OPTIONS="--max-old-space-size=4096"
-          node worker.cjs --batch ${{ matrix.batch_id }}
+      - name: Run Replay Parser Worker
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          DYNAMO_TABLE: ${{ secrets.DYNAMO_TABLE }}
+          SESSION_ID: ${{ inputs.session_id }}
+          EVENT_ID: ${{ inputs.event_id }}
+          WINDOW_ID: ${{ inputs.window_id }}
+          VPS_CALLBACK_URL: ${{ inputs.vps_callback_url }}
+        run: node scripts/github-parser-runner.js
